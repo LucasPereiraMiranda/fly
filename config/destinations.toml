@@ -112,6 +112,7 @@ city = "Santiago"
 region = "america_sul"
 priority = "media"
 country = "CL"
+aliases = ["Chile", "chilenos", "chilenas"]
 
 [[destination]]
 iata = "EZE"
@@ -119,6 +120,7 @@ city = "Buenos Aires (Ezeiza)"
 region = "america_sul"
 priority = "media"
 country = "AR"
+aliases = ["Argentina"]
 
 [[destination]]
 iata = "AEP"
@@ -141,6 +143,7 @@ city = "Lima"
 region = "america_sul"
 priority = "media"
 country = "PE"
+aliases = ["Peru"]
 
 [[destination]]
 iata = "BOG"
@@ -148,6 +151,7 @@ city = "Bogotá"
 region = "america_sul"
 priority = "media"
 country = "CO"
+aliases = ["Colômbia", "colombianos", "colombianas"]
 
 [[destination]]
 iata = "CTG"
@@ -219,6 +223,7 @@ city = "Seul"
 region = "asia"
 priority = "media"
 country = "KR"
+aliases = ["Coreia do Sul", "Coreia"]
 
 [[destination]]
 iata = "BKK"
@@ -234,6 +239,7 @@ city = "Ho Chi Minh"
 region = "asia"
 priority = "media"
 country = "VN"
+aliases = ["Vietnã"]
 
 [[destination]]
 iata = "HAN"
@@ -263,6 +269,7 @@ city = "Manila"
 region = "asia"
 priority = "media"
 country = "PH"
+aliases = ["Filipinas"]
 
 [[destination]]
 iata = "KUL"
@@ -270,6 +277,7 @@ city = "Kuala Lumpur"
 region = "asia"
 priority = "media"
 country = "MY"
+aliases = ["Malásia"]
 
 [[destination]]
 iata = "LIS"
@@ -285,6 +293,7 @@ city = "Madri"
 region = "europa"
 priority = "baixa"
 country = "ES"
+aliases = ["Espanha"]
 
 [[destination]]
 iata = "CDG"
@@ -292,6 +301,7 @@ city = "Paris"
 region = "europa"
 priority = "baixa"
 country = "FR"
+aliases = ["França"]
 
 [[destination]]
 iata = "FCO"
@@ -299,6 +309,7 @@ city = "Roma"
 region = "europa"
 priority = "baixa"
 country = "IT"
+aliases = ["Itália"]
 
 [[destination]]
 iata = "AMS"
@@ -306,6 +317,7 @@ city = "Amsterdã"
 region = "europa"
 priority = "baixa"
 country = "NL"
+aliases = ["Holanda"]
 
 [[destination]]
 iata = "IST"
@@ -313,6 +325,7 @@ city = "Istambul"
 region = "europa"
 priority = "baixa"
 country = "TR"
+aliases = ["Turquia"]
 
 [[destination]]
 iata = "DXB"
@@ -320,6 +333,7 @@ city = "Dubai"
 region = "oriente_medio"
 priority = "baixa"
 country = "AE"
+aliases = ["Emirados"]
 
 [[destination]]
 iata = "DOH"
@@ -327,6 +341,7 @@ city = "Doha"
 region = "oriente_medio"
 priority = "baixa"
 country = "QA"
+aliases = ["Catar"]
 
 [[destination]]
 iata = "SYD"
@@ -334,6 +349,7 @@ city = "Sydney"
 region = "oceania"
 priority = "baixa"
 country = "AU"
+aliases = ["Austrália"]
 
 [[destination]]
 iata = "PUJ"
@@ -341,6 +357,7 @@ city = "Punta Cana"
 region = "caribe"
 priority = "baixa"
 country = "DO"
+aliases = ["República Dominicana"]
 
 [[destination]]
 iata = "CUN"
@@ -348,3 +365,4 @@ city = "Cancún"
 region = "caribe"
 priority = "baixa"
 country = "MX"
+aliases = ["México"]

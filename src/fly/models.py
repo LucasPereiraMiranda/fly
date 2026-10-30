@@ -63,7 +63,7 @@ class PriceLine:
     miles: int | None
     cash_brl: Decimal | None
     dates: tuple[date, ...]
-    per_segment: bool
+    per_segment: bool | None  # None: the article does not say per segment or round trip
 
 
 @dataclass(frozen=True)

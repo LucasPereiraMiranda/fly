@@ -48,6 +48,8 @@ class RobotsGate:
             resp = self._client.get(f"{host}/robots.txt", headers={"User-Agent": USER_AGENT})
         except httpx.TransportError as exc:
             raise FetchNetworkError(f"robots.txt: {type(exc).__name__}") from exc
+        except httpx.HTTPError as exc:
+            raise FetchError(f"robots.txt: {type(exc).__name__}") from exc
         if resp.status_code != 200:
             return None  # no robots.txt: everything is allowed
         parser = RobotFileParser()
@@ -62,6 +64,8 @@ def fetch_text(client: httpx.Client, gate: RobotsGate, url: str) -> str:
         resp = client.get(url, headers={"User-Agent": USER_AGENT})
     except httpx.TransportError as exc:
         raise FetchNetworkError(type(exc).__name__) from exc
+    except httpx.HTTPError as exc:  # redirect loop, bad URL, undecodable body...
+        raise FetchError(type(exc).__name__) from exc
     if resp.status_code != 200:
         raise FetchError(f"HTTP {resp.status_code}")
     return resp.text
@@ -78,7 +82,10 @@ def parse_feed(xml: str, feed: str) -> list[FeedItem]:
         raise FetchError("feed xml") from exc
     items = []
     for it in root.findall("./channel/item"):
-        published = parsedate_to_datetime(it.findtext("pubDate"))
+        try:
+            published = parsedate_to_datetime(it.findtext("pubDate"))
+        except (TypeError, ValueError):
+            continue  # an item without a usable date is skipped, not the whole feed
         items.append(FeedItem(
             feed=feed,
             url=(it.findtext("link") or "").strip(),
@@ -87,4 +94,6 @@ def parse_feed(xml: str, feed: str) -> list[FeedItem]:
             categories=tuple((c.text or "").strip() for c in it.findall("category")),
             published_at=published.astimezone(LOCAL_TZ).replace(tzinfo=None),
         ))
+    if not items:
+        raise FetchError("feed sem itens")  # a format change must not look like a quiet success
     return items

@@ -21,6 +21,8 @@ MONTHS = {
     "janeiro": 1, "fevereiro": 2, "marco": 3, "abril": 4, "maio": 5, "junho": 6, "julho": 7,
     "agosto": 8, "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12,
 }
+NUMBER = re.compile(r"(\d{1,3}(?:\.\d{3})+|\d+(?:,\d+)?)\s*(mil\b)?")
+MIN_MILES = 1000
 DATE = re.compile(rf"\b(\d{{1,2}}) de ({'|'.join(MONTHS)})\b")
 
 
@@ -65,16 +67,15 @@ def _bh_rows(table, published: date) -> list[PriceLine]:
         program = AIRLINE_PROGRAM.get(normalize(company).strip())
         # The traveler has Clube Azul but not Clube Smiles: club prices only count for Azul.
         col = club if (program == "azul" and club is not None) else (regular if regular is not None else club)
-        digits = re.sub(r"\D", "", cells[col])
         lines.append(PriceLine(
             origin=cells[origin],
             destination=cells[dest] if dest is not None else "",
             airline=company,
             program=program,
-            miles=int(digits) if digits else None,
+            miles=parse_miles(cells[col]),
             cash_brl=None,
             dates=_dates(cells[dates_col], published) if dates_col is not None else (),
-            per_segment="trecho" in header[col],
+            per_segment=_fare_basis(header[col]),
         ))
     return lines
 
@@ -94,3 +95,27 @@ def extract_article(html: str, feed: str, url: str, published: date) -> Article:
         dates=_dates(text, published),
         expired=bool(EXPIRED.search(normalize(text))),
     )
+
+
+def parse_miles(cell: str) -> int | None:
+    """First miles amount in a cell: '46.500', '46 mil', '27,5 mil' (ignores '+ R$ 50,00' etc.)."""
+    m = NUMBER.search(normalize(cell))
+    if not m:
+        return None
+    number, thousand = m.groups()
+    if thousand:
+        value = round(float(number.replace(".", "").replace(",", ".")) * 1000)
+    elif "," in number:
+        return None
+    else:
+        value = int(number.replace(".", ""))
+    return value if value >= MIN_MILES else None
+
+
+def _fare_basis(header: str) -> bool | None:
+    """True: price per segment; False: round trip; None: the column does not say."""
+    if "ida e volta" in header:
+        return False
+    if "trecho" in header or re.search(r"\bida\b", header):
+        return True
+    return None
