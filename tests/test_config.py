@@ -10,15 +10,17 @@ def test_defaults_from_config(tmp_path):
     assert s.origin == "CNF"
     assert (s.window_min_days, s.window_max_days) == (60, 240)
     assert (s.alert_discount, s.digest_discount) == (0.50, 0.30)
-    assert (s.return_min_days, s.return_max_days) == (2, 30)
+    assert s.post_max_age_hours == 24
+    assert s.feeds == {
+        "passageirodeprimeira": "https://passageirodeprimeira.com/feed/",
+        "pontospravoar": "https://pontospravoar.com/feed/",
+    }
     assert s.milheiro_brl == {
         "smiles": Decimal("16.84"),
         "azul": Decimal("14.00"),
         "latam": Decimal("25.90"),
     }
-    assert s.revisit_days == {"alta": 2, "media": 5, "baixa": 14}
-    assert s.smiles_budget_per_round == 10
-    assert s.smiles_delay_seconds == (8, 15)
+    assert not hasattr(s, "smiles_budget_per_round")
     assert s.telegram_token is None
 
 
