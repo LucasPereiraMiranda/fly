@@ -38,11 +38,11 @@ fly was developed with these technologies
 
 ## 💻 Project
 
-I have miles, I live in Belo Horizonte and I'm always up for a trip, as long as the deal is really worth it. Once I found a flight to Maceió for 8 thousand miles when it usually costs 30 to 40 thousand, and that's exactly the kind of deal I don't want to miss again.
+fly monitors flight deals departing from Belo Horizonte, in miles and in cash.
 
-fly does the boring part for me. It keeps an eye on flight deal blogs, picks the ones departing from Belo Horizonte to places I'd like to go, checks if the price is really far below the usual and sends me a message on Telegram when it is. Everything else goes into a short daily summary, so I can take a look over coffee.
+It keeps an eye on flight deal blogs, picks the deals for the destinations of interest and checks whether the price is really far below the usual for that route. When it is, a message arrives on Telegram right away. The other interesting deals go into a short daily summary.
 
-It runs quietly on my Mac, every 30 minutes, without opening anything.
+It runs in the background on macOS, every 30 minutes.
 
 ## :boom: Installation
 
