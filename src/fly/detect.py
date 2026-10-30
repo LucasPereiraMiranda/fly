@@ -1,32 +1,22 @@
 from __future__ import annotations
 
-from fly.models import Baseline, Deal, FareQuote
+from typing import Literal
 
-REALERT_RATIO = 0.9
+from fly.models import Baseline
 
 
-def classify(
-    quote: FareQuote,
+def discount_tier(
+    price: float,
     baseline: Baseline,
-    alert_at: float = 0.50,
-    digest_at: float = 0.30,
-) -> Deal | None:
-    """Deal tier for a quote measured against the route's normal price, or None."""
-    if quote.miles is None or quote.miles <= 0 or baseline.value <= 0:
-        return None
-    discount = 1 - quote.miles / baseline.value
+    alert_at: float,
+    digest_at: float,
+) -> tuple[float, Literal["alert", "digest"] | None]:
+    """How far below normal a price is, and whether that earns an alert or a digest line."""
+    if price <= 0 or baseline.value <= 0:
+        return 0.0, None
+    discount = 1 - price / baseline.value
     if discount >= alert_at:
-        return Deal(quote, baseline, discount, "alert")
+        return discount, "alert"
     if discount >= digest_at:
-        return Deal(quote, baseline, discount, "digest")
-    return None
-
-
-def dedupe_key(quote: FareQuote) -> str:
-    r = quote.route
-    return f"{quote.source}:{r.origin}-{r.destination}:{quote.flight_date.isoformat()}"
-
-
-def should_alert(new_value: float, last_alerted_value: float | None) -> bool:
-    """Alert once per flight; alert again only if the price dropped at least 10% more."""
-    return last_alerted_value is None or new_value <= REALERT_RATIO * last_alerted_value
+        return discount, "digest"
+    return discount, None
