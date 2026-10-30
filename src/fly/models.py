@@ -33,3 +33,11 @@ class Baseline:
     value: float
     unit: Literal["miles", "brl"]
     estimated: bool
+
+
+@dataclass(frozen=True)
+class Deal:
+    quote: FareQuote
+    baseline: Baseline
+    discount: float
+    tier: Literal["alert", "digest"]
