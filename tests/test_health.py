@@ -2,6 +2,7 @@ from dataclasses import replace
 from datetime import timedelta
 
 from conftest import T0
+
 from fly.health import (
     is_available,
     needs_health_notice,

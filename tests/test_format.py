@@ -3,6 +3,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from conftest import item
+
 from fly.catalog import Destination
 from fly.models import Baseline, PostDecision, PriceLine, SourceState
 from fly.notify.format import format_digest_line, format_feed_digest, format_health, format_post_alert
