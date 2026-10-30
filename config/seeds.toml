@@ -1,0 +1,60 @@
+# Normal price (miles, one way / per segment, economy, departing BH) used to judge a promo.
+# The midpoint of each range is the normal; an alert needs a price at least 50% below it.
+# Route seeds come from the traveler's own experience; region seeds are rough estimates
+# (2026-10-29) meant to be adjusted.
+
+[[seed]]
+program = "smiles"
+destination = "MCZ"
+min = 30000
+max = 40000
+
+[[region_seed]]
+region = "nordeste"
+min = 30000
+max = 40000
+
+[[region_seed]]
+region = "sul"
+min = 25000
+max = 35000
+
+[[region_seed]]
+region = "norte"
+min = 25000
+max = 40000
+
+[[region_seed]]
+region = "centro_oeste"
+min = 20000
+max = 30000
+
+[[region_seed]]
+region = "america_sul"
+min = 50000
+max = 70000
+
+[[region_seed]]
+region = "caribe"
+min = 60000
+max = 90000
+
+[[region_seed]]
+region = "europa"
+min = 90000
+max = 130000
+
+[[region_seed]]
+region = "oriente_medio"
+min = 100000
+max = 140000
+
+[[region_seed]]
+region = "asia"
+min = 120000
+max = 160000
+
+[[region_seed]]
+region = "oceania"
+min = 120000
+max = 160000
