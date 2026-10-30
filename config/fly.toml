@@ -1,0 +1,24 @@
+origin = "CNF"
+db_path = "data/fly.db"
+
+# Travel dates watched: from window_min_days to window_max_days ahead.
+window_min_days = 60
+window_max_days = 240
+
+# Discount vs the route's normal price.
+alert_discount = 0.50
+digest_discount = 0.30
+
+# Only fresh posts trigger an immediate alert; older ones go to the daily summary.
+post_max_age_hours = 24
+
+# BRL per 1000 miles (direct purchase reference, Jul 2026).
+[milheiro_brl]
+smiles = "16.84"
+azul = "14.00"
+latam = "25.90"
+
+# Promo feeds read by fly (Melhores Destinos is excluded: its robots.txt disallows the feed).
+[feeds]
+passageirodeprimeira = "https://passageirodeprimeira.com/feed/"
+pontospravoar = "https://pontospravoar.com/feed/"
