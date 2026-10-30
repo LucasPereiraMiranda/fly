@@ -41,3 +41,16 @@ class Deal:
     baseline: Baseline
     discount: float
     tier: Literal["alert", "digest"]
+
+
+@dataclass(frozen=True)
+class SourceState:
+    """Health of a price source: whether it may be queried and how it has been failing."""
+
+    name: str
+    status: Literal["ok", "paused"]
+    paused_until: datetime | None
+    backoff_minutes: int
+    failure_streak: int
+    last_error: str | None
+    notified: bool
