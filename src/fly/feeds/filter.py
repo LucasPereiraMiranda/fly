@@ -12,7 +12,11 @@ NOT_FARE_TITLE = re.compile(
     r"\b(cartao|clube\w*|assinatura\w*|transfer\w*|bonus|hote\w*|hosped\w*|diarias?|cashback|"
     r"ingressos?|cupo\w*|acumul\w*)\b"
 )
-GENERIC = re.compile(r"\b(pelo brasil|voos nacionais|destinos nacionais|nacionais|nacional)\b")
+GENERIC = re.compile(
+    r"\b(pelo brasil|voos nacionais|destinos nacionais|nacionais|nacional|europa|nordeste|"
+    r"america do sul|asia|sudeste asiatico|caribe|oriente medio)\b"
+)
+TO_PREFIX = re.compile(r"(\b(para|a|ate)\s+((o|a|os|as)\s+)?|→\s*)$")
 
 
 def normalize(text: str) -> str:
@@ -34,17 +38,28 @@ def _names(dest: Destination) -> list[str]:
     return [normalize(n) for n in (base_city, *dest.aliases)]
 
 
+def _is_holiday(norm: str, start: int, end: int) -> bool:
+    """'Promoção de Natal:' is Christmas, not the airport NAT."""
+    return norm[start:end] == "natal" and (norm[:start].endswith("de ") or norm[end:].lstrip().startswith(":"))
+
+
 def match_destination(text: str, catalog: list[Destination]) -> Destination | None:
-    """The catalog destination mentioned earliest in the text, by city, alias or (IATA)."""
+    """The catalog destination the text points to, by city, alias or (IATA).
+
+    A place right after "para"/"a"/"até" wins (in "Fortaleza a Lisboa" the destination is
+    Lisboa); otherwise the earliest mention.
+    """
     norm = normalize(text)
-    best: tuple[int, int, Destination] | None = None
+    found: list[tuple[bool, int, int, Destination]] = []
     for order, dest in enumerate(catalog):
         patterns = [rf"\b{re.escape(n)}\b" for n in _names(dest)] + [rf"\({dest.iata.lower()}\)"]
         for pattern in patterns:
-            m = re.search(pattern, norm)
-            if m and (best is None or (m.start(), order) < best[:2]):
-                best = (m.start(), order, dest)
-    return best[2] if best else None
+            for m in re.finditer(pattern, norm):
+                if _is_holiday(norm, m.start(), m.end()):
+                    continue
+                after_to = bool(TO_PREFIX.search(norm[:m.start()]))
+                found.append((not after_to, m.start(), order, dest))
+    return min(found, key=lambda f: f[:3])[3] if found else None
 
 
 def is_generic(text: str) -> bool:

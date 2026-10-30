@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 
@@ -15,12 +16,19 @@ from fly.feeds.decide import decide
 from fly.feeds.filter import match_destination
 from fly.feeds.reader import FetchError, FetchNetworkError, RobotsGate, fetch_text, parse_feed
 from fly.health import needs_health_notice, on_error, on_network_error, on_success
-from fly.models import Article, PostDecision
+from fly.models import Article, FeedItem, PostDecision
 from fly.money import brl_equivalent
 from fly.notify.format import format_digest_line, format_feed_digest, format_health, format_post_alert
 
 log = logging.getLogger(__name__)
 DIGEST_WINDOW = timedelta(hours=24)
+RUN_SOURCE = "fly"
+ARTICLE_SUFFIX = "-artigo"
+
+
+def _sources(settings: Settings) -> list[str]:
+    """Health sources: each feed, plus each feed's article layout."""
+    return [*settings.feeds, *(f"{name}{ARTICLE_SUFFIX}" for name in settings.feeds)]
 
 
 @dataclass
@@ -59,8 +67,49 @@ def _read_feed(client: httpx.Client, gate: RobotsGate, db: Database, name: str, 
     except FetchError as exc:
         db.save_state(on_error(state, str(exc)))
         return None
+    except Exception as exc:  # unexpected parse failure: count it, never crash the round
+        log.exception("feed %s failed", name)
+        db.save_state(on_error(state, type(exc).__name__))
+        return None
     db.save_state(on_success(state))
     return items
+
+
+def _track_layout(db: Database, feed: str, article: Article) -> None:
+    """An article without the expected main content means the site changed its layout."""
+    name = f"{feed}{ARTICLE_SUFFIX}"
+    state = db.get_state(name)
+    db.save_state(on_error(state, "layout do artigo mudou") if not article.text else on_success(state))
+
+
+def _process(item: FeedItem, *, db: Database, client: httpx.Client, gate: RobotsGate, notifier,
+             catalog: list[Destination], seeds: Seeds, settings: Settings, now: datetime) -> bool:
+    """Decide one new post and record it; returns True when an alert was delivered."""
+    first = decide(item, None, catalog, seeds, settings, now)
+    if first.tier == "drop":  # no need to open the article
+        db.record_post(first, None, None, now)
+        return False
+    try:
+        html = fetch_text(client, gate, item.url)
+        article = extract_article(html, item.feed, item.url, item.published_at.date())
+    except FetchError as exc:
+        log.info("article unavailable %s: %s", item.url, exc)
+        article = None
+    if article is not None:
+        _track_layout(db, item.feed, article)
+        _record_prices(db, article, catalog, now)
+    d = decide(item, article, catalog, seeds, settings, now)
+    if d.tier == "alert":
+        message = _alert_text(db, d, settings)
+        db.record_post(d, message, None, now)
+        if notifier.send(message):
+            db.mark_sent(item.url)
+            return True
+    elif d.tier == "digest":
+        db.record_post(d, None, format_digest_line(d), now)
+    else:
+        db.record_post(d, None, None, now)
+    return False
 
 
 def run_feeds(*, db: Database, client: httpx.Client, notifier, catalog: list[Destination],
@@ -83,31 +132,16 @@ def run_feeds(*, db: Database, client: httpx.Client, notifier, catalog: list[Des
             if db.post_seen(item.url):
                 continue
             report.new_posts += 1
-            first = decide(item, None, catalog, seeds, settings, now)
-            if first.tier == "drop":  # no need to open the article
-                db.record_post(first, None, None, now)
-                continue
             try:
-                html = fetch_text(client, gate, item.url)
-                article = extract_article(html, name, item.url, item.published_at.date())
-            except FetchError as exc:
-                log.info("article unavailable %s: %s", item.url, exc)
-                article = None
-            if article is not None:
-                _record_prices(db, article, catalog, now)
-            d = decide(item, article, catalog, seeds, settings, now)
-            if d.tier == "alert":
-                message = _alert_text(db, d, settings)
-                db.record_post(d, message, None, now)
-                if notifier.send(message):
-                    db.mark_sent(item.url)
+                if _process(item, db=db, client=client, gate=gate, notifier=notifier,
+                            catalog=catalog, seeds=seeds, settings=settings, now=now):
                     report.alerts_sent += 1
-            elif d.tier == "digest":
-                db.record_post(d, None, format_digest_line(d), now)
-            else:
-                db.record_post(d, None, None, now)
+            except Exception:  # one odd post must never silence the whole round
+                log.exception("post failed %s", item.url)
+                failed = PostDecision(item, "digest", "erro ao processar — confira", None, None, None, None)
+                db.record_post(failed, None, format_digest_line(failed), now)
 
-    for name in settings.feeds:
+    for name in _sources(settings):
         state = db.get_state(name)
         if needs_health_notice(state) and notifier.send(format_health(state)):
             db.save_state(replace(state, notified=True))
@@ -116,4 +150,21 @@ def run_feeds(*, db: Database, client: httpx.Client, notifier, catalog: list[Des
 
 def build_feed_digest(*, db: Database, settings: Settings, now: datetime) -> str:
     lines = db.digest_lines(now - DIGEST_WINDOW)
-    return format_feed_digest(lines, [db.get_state(n) for n in settings.feeds], now.date())
+    return format_feed_digest(lines, [db.get_state(n) for n in _sources(settings)], now.date())
+
+
+def run_guarded(job: Callable[[], None], *, db: Database, notifier) -> None:
+    """Run a scheduled job; on any crash, log it and tell the traveler once until it recovers."""
+    state = db.get_state(RUN_SOURCE)
+    try:
+        job()
+    except Exception as exc:
+        log.exception("fly job failed")
+        state = on_error(state, type(exc).__name__)
+        if not state.notified and notifier.send(
+            f"⚠️ fly: execução falhou ({type(exc).__name__}). Veja data/logs/fly.log."
+        ):
+            state = replace(state, notified=True)
+        db.save_state(state)
+        return
+    db.save_state(on_success(state))
