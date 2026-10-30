@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Literal
 
 
 @dataclass(frozen=True)
@@ -23,3 +24,12 @@ class FareQuote:
     cash_brl: Decimal | None
     taxes_brl: Decimal | None
     observed_at: datetime
+
+
+@dataclass(frozen=True)
+class Baseline:
+    """The route's normal price, against which discounts are measured."""
+
+    value: float
+    unit: Literal["miles", "brl"]
+    estimated: bool

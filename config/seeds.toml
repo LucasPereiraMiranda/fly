@@ -1,0 +1,9 @@
+# Starting "normal" price ranges (miles, one way) used until a route has enough history.
+# The midpoint of the range is the normal.
+
+[[seed]]
+source = "smiles"
+origin = "CNF"
+destination = "MCZ"
+min = 30000
+max = 40000
