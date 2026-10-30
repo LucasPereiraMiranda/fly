@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Finds real flight deals departing from Belo Horizonte, in miles and cash."
 requires-python = ">=3.12"
 dependencies = [
-    "beautifulsoup4>=4.12",
+    "beautifulsoup4>=4.15.0",
     "httpx>=0.27",
     "python-dotenv>=1.0",
 ]
