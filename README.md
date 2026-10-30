@@ -16,6 +16,10 @@
   <a href="https://github.com/LucasPereiraMiranda/fly/issues">
     <img alt="Repository issues" src="https://img.shields.io/github/issues/LucasPereiraMiranda/fly">
   </a>
+
+  <a href="https://github.com/LucasPereiraMiranda/fly/blob/main/LICENSE">
+    <img alt="GitHub license" src="https://img.shields.io/github/license/LucasPereiraMiranda/fly">
+  </a>
 </p>
 
 <br>
@@ -76,3 +80,7 @@ $ scripts/install_launchd.sh
 ```
 
 Want to tweak what counts as a good deal? Destinations live in `config/destinations.toml` and the usual price of each region in `config/seeds.toml`.
+
+## License
+
+This project is under the MIT license. See the [LICENSE](LICENSE) file for more details.
