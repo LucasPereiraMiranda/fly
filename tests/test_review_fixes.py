@@ -5,8 +5,8 @@ from pathlib import Path
 
 import httpx
 import pytest
-
 from conftest import item
+
 from fly.baseline import load_seeds
 from fly.catalog import load_catalog
 from fly.config import load_settings

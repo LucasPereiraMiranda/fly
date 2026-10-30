@@ -1,4 +1,5 @@
 from conftest import item
+
 from fly.catalog import load_catalog
 from fly.feeds.filter import is_fare_post, is_generic, match_destination
 
