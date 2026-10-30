@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main, homologation]
+  pull_request:
+    branches: [main, homologation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Ruff
+        run: ruff check src tests --output-format=github
+
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Pytest
+        run: pytest -q
+
+  config:
+    name: Config and scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Load config files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from fly.baseline import load_seeds
+          from fly.catalog import load_catalog
+          from fly.config import load_settings
+
+          settings = load_settings(Path("config/fly.toml"), Path(".env.example"))
+          catalog = load_catalog()
+          seeds = load_seeds()
+          regions = {d.region for d in catalog}
+          missing = regions - set(seeds.regions)
+          assert not missing, f"regions without a normal price seed: {sorted(missing)}"
+          print(f"{len(settings.feeds)} feeds, {len(catalog)} destinations, {len(seeds.regions)} region seeds")
+          PY
+
+      - name: Validate launchd plists
+        run: |
+          python - <<'PY'
+          import glob
+          import plistlib
+
+          for path in sorted(glob.glob("launchd/*.plist")):
+              with open(path, "rb") as f:
+                  plist = plistlib.load(f)
+              assert plist["ProgramArguments"][-1] in {"run", "digest"}, path
+              print(f"{path}: OK")
+          PY
+
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
+
+      - name: CLI help
+        run: python -m fly --help

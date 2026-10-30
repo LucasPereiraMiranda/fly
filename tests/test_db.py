@@ -2,6 +2,7 @@ from dataclasses import replace
 from datetime import datetime, timedelta
 
 from conftest import item
+
 from fly.models import Baseline, PostDecision
 
 NOW = datetime(2026, 10, 29, 10, 0)
