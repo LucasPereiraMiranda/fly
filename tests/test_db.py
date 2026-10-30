@@ -57,3 +57,8 @@ def test_init_idempotent(tmp_path):
     d = Database(tmp_path / "t.db")
     d.init()
     d.init()
+
+
+def test_latest_quotes_one_row_per_date_on_timestamp_tie(db):
+    db.add_quotes([quote(miles=30000), quote(miles=25000)])
+    assert [q.miles for q in db.latest_quotes("smiles", Route("CNF", "MCZ"), T0)] == [25000]

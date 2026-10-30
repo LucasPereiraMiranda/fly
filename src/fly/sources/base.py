@@ -24,3 +24,7 @@ class Source(Protocol):
     def fetch_week(self, route: Route, center: date) -> list[FareQuote]:
         """Lowest prices for the days around `center`."""
         ...
+
+    def link(self, route: Route, day: date) -> str:
+        """Public page where the traveler can see and book this flight."""
+        ...

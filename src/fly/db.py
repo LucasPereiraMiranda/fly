@@ -106,11 +106,15 @@ class Database:
             (source, route.origin, route.destination, since.isoformat(),
              source, route.origin, route.destination),
         )
-        return [
-            FareQuote(source, route, date.fromisoformat(fd), miles, _dec(cash), _dec(taxes),
-                      datetime.fromisoformat(obs))
-            for fd, miles, cash, taxes, obs in rows
-        ]
+        latest: dict[str, FareQuote] = {}
+        for fd, miles, cash, taxes, obs in rows:
+            # Several rows can share the latest timestamp; keep the cheapest one per date.
+            q = FareQuote(source, route, date.fromisoformat(fd), miles, _dec(cash), _dec(taxes),
+                          datetime.fromisoformat(obs))
+            kept = latest.get(fd)
+            if kept is None or (q.miles or 0) < (kept.miles or 0):
+                latest[fd] = q
+        return list(latest.values())
 
     def last_alert_value(self, key: str) -> float | None:
         row = self._conn.execute("SELECT value FROM alerts WHERE key = ?", (key,)).fetchone()

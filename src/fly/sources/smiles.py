@@ -38,6 +38,9 @@ class SmilesSource:
         self._session = session
         self._clock = clock
 
+    def link(self, route: Route, day: date) -> str:
+        return build_search_url(route, day)
+
     def fetch_week(self, route: Route, center: date) -> list[FareQuote]:
         status, payload = self._session.fetch_json(build_search_url(route, center), CAROUSEL_MATCH)
         if status in BLOCKED_STATUSES:
