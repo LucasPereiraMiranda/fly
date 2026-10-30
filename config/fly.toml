@@ -1,0 +1,30 @@
+origin = "CNF"
+db_path = "data/fly.db"
+
+# Travel dates watched: from window_min_days to window_max_days ahead.
+window_min_days = 60
+window_max_days = 240
+
+# Discount vs the route's normal price.
+alert_discount = 0.50
+digest_discount = 0.30
+
+# Return leg search window, in days after the outbound flight.
+return_min_days = 2
+return_max_days = 30
+
+# BRL per 1000 miles (direct purchase reference, Jul 2026).
+[milheiro_brl]
+smiles = "16.84"
+azul = "14.00"
+latam = "25.90"
+
+# How often a route/week is revisited, by destination priority.
+[revisit_days]
+alta = 2
+media = 5
+baixa = 14
+
+[sources.smiles]
+budget_per_round = 10
+delay_seconds = [8, 15]
