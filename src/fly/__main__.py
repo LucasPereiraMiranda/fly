@@ -14,7 +14,7 @@ from fly.config import Settings, load_settings
 from fly.db import Database
 from fly.feeds.reader import USER_AGENT
 from fly.notify.telegram import TelegramNotifier
-from fly.run import build_feed_digest, run_feeds
+from fly.run import build_feed_digest, run_feeds, run_guarded
 
 log = logging.getLogger("fly")
 LOG_FILE = Path("data/logs/fly.log")
@@ -39,18 +39,26 @@ def _open(settings: Settings) -> tuple[Database, TelegramNotifier]:
 def cmd_run() -> None:
     settings = load_settings()
     db, notifier = _open(settings)
-    with httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=20, follow_redirects=True) as client:
-        report = run_feeds(db=db, client=client, notifier=notifier, catalog=load_catalog(),
-                           seeds=load_seeds(), settings=settings, now=datetime.now())
-    log.info("round done: new_posts=%s alerts=%s failed_feeds=%s",
-             report.new_posts, report.alerts_sent, report.failed_feeds)
+
+    def job() -> None:
+        with httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=20, follow_redirects=True) as client:
+            report = run_feeds(db=db, client=client, notifier=notifier, catalog=load_catalog(),
+                               seeds=load_seeds(), settings=settings, now=datetime.now())
+        log.info("round done: new_posts=%s alerts=%s failed_feeds=%s",
+                 report.new_posts, report.alerts_sent, report.failed_feeds)
+
+    run_guarded(job, db=db, notifier=notifier)
 
 
 def cmd_digest() -> None:
     settings = load_settings()
     db, notifier = _open(settings)
-    sent = notifier.send(build_feed_digest(db=db, settings=settings, now=datetime.now()))
-    log.info("digest sent=%s", sent)
+
+    def job() -> None:
+        sent = notifier.send(build_feed_digest(db=db, settings=settings, now=datetime.now()))
+        log.info("digest sent=%s", sent)
+
+    run_guarded(job, db=db, notifier=notifier)
 
 
 def main(argv: list[str] | None = None) -> None:

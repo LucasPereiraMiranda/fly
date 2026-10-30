@@ -123,3 +123,54 @@ def test_digest_contains_unconfirmed_bh_post(db, settings):
     _run(db, site, FakeNotifier(), settings)
     text = build_feed_digest(db=db, settings=settings, now=NOW)
     assert "Viaje para Lisboa a partir de 50 mil milhas — confira se sai de BH — https://pontospravoar.com/lisboa/" in text
+
+
+def _feed(*slugs):
+    items = "".join(
+        f"<item><title>Viaje para Lisboa a partir de 50 mil milhas {s}</title>"
+        f"<link>https://pontospravoar.com/{s}/</link><pubDate>Thu, 29 Oct 2026 12:00:00 +0000</pubDate></item>"
+        for s in slugs
+    )
+    return f"<rss><channel>{items}</channel></rss>"
+
+
+def test_item_crash_does_not_stop_round(db, settings, monkeypatch):
+    import fly.run
+
+    real = fly.run.decide
+
+    def flaky(item, article, *args, **kwargs):
+        if "alerta-montevideu" in item.url and article is not None:
+            raise ValueError("boom")
+        return real(item, article, *args, **kwargs)
+
+    monkeypatch.setattr(fly.run, "decide", flaky)
+    report = _run(db, Site(), FakeNotifier(), settings)
+    assert report.new_posts == 3
+    assert db.post_seen("https://pontospravoar.com/alerta-montevideu/")
+    assert "erro ao processar — confira" in build_feed_digest(db=db, settings=settings, now=NOW)
+
+
+def test_article_layout_change_triggers_health_notice(db, settings):
+    slugs = ("a", "b", "c")
+    site = Site(**{"pontospravoar.com/feed/": _feed(*slugs)},
+                **{f"pontospravoar.com/{s}/": "<html><body><p>novo layout</p></body></html>" for s in slugs})
+    notifier = FakeNotifier()
+    _run(db, site, notifier, settings)
+    assert "⚠️ fly: fonte pontospravoar-artigo com problema (layout do artigo mudou) — 3 falhas seguidas." in notifier.sent
+
+
+def test_run_guard_notifies_once_and_resets(db):
+    from fly.run import run_guarded
+
+    notifier = FakeNotifier()
+
+    def boom():
+        raise ValueError("seeds typo")
+
+    for _ in range(2):
+        run_guarded(boom, db=db, notifier=notifier)
+    assert notifier.sent == ["⚠️ fly: execução falhou (ValueError). Veja data/logs/fly.log."]
+    run_guarded(lambda: None, db=db, notifier=notifier)
+    run_guarded(boom, db=db, notifier=notifier)
+    assert len(notifier.sent) == 2
