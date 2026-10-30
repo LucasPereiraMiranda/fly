@@ -5,6 +5,10 @@
 </h1>
 
 <p align="center">
+  <a href="https://github.com/LucasPereiraMiranda/fly/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/LucasPereiraMiranda/fly/actions/workflows/ci.yml/badge.svg?branch=main">
+  </a>
+
   <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/LucasPereiraMiranda/fly">
 
   <img alt="Repository size" src="https://img.shields.io/github/repo-size/LucasPereiraMiranda/fly">
