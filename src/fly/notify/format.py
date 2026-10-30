@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import re
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
-from fly.catalog import Destination
-from fly.models import Deal, FareQuote, SourceState
+from fly.models import PostDecision, SourceState
 
-PROGRAM_NAMES = {"smiles": "Smiles", "azul": "Azul"}
-DIGEST_MAX_ITEMS = 10
+PROGRAM_NAMES = {"smiles": "Smiles", "azul": "Azul", "latam": "LATAM Pass"}
+FEED_NAMES = {"passageirodeprimeira": "Passageiro de Primeira", "pontospravoar": "Pontos pra Voar"}
+DIGEST_MAX_ITEMS = 15
+MAX_DATES = 3
 
 
 def _int(n: float) -> str:
@@ -20,66 +22,56 @@ def _brl(v: Decimal) -> str:
     return f"R$ {whole.replace(',', '.')},{frac}"
 
 
-def _program(source: str) -> str:
-    return PROGRAM_NAMES.get(source, source)
+def _iata(place: str, fallback: str) -> str:
+    m = re.search(r"\(([A-Z]{3})\)", place)
+    return m.group(1) if m else fallback
 
 
-def _price(q: FareQuote) -> str:
-    if q.miles is not None:
-        return f"{_int(q.miles)} milhas"
-    return _brl(q.cash_brl) if q.cash_brl is not None else "preço indisponível"
+def _program(d: PostDecision) -> str:
+    line = d.price
+    return PROGRAM_NAMES.get(line.program, line.airline) if line else ""
 
 
-def format_alert(
-    deal: Deal,
-    dest: Destination,
-    ret: FareQuote | None,
-    brl: Decimal | None,
-    link: str,
-    has_balance: bool,
-) -> str:
-    q = deal.quote
-    estimated = " — referência estimada" if deal.baseline.estimated else ""
+def _route(d: PostDecision) -> str:
+    origin = _iata(d.price.origin, "BH") if d.price else "BH"
+    dest = d.destination.iata if d.destination else "?"
+    return f"{origin} → {dest}"
+
+
+def format_post_alert(d: PostDecision, lowest_seen: int | None, brl: Decimal | None) -> str:
+    line = d.price
+    trip = "por trecho" if line.per_segment else "ida e volta"
+    estimated = " — referência estimada" if d.baseline.estimated else ""
     lines = [
-        f"🔥 PROMOÇÃO: {round(deal.discount * 100)}% abaixo do normal",
-        f"{q.route.origin} → {q.route.destination} ({dest.city})",
-        f"{q.flight_date:%d/%m/%Y} · {_program(q.source)}",
-        f"{_price(q)} (normal ~{_int(deal.baseline.value)}{estimated})",
+        f"🔥 PROMOÇÃO: {round(d.discount * 100)}% abaixo do normal",
+        f"{_route(d)} ({d.destination.city})",
+        f"{_program(d)} · {_int(line.miles)} milhas {trip} (normal ~{_int(d.baseline.value)}{estimated})",
     ]
     if brl is not None:
         lines.append(f"≈ {_brl(brl)}")
-    if has_balance:
-        lines.append("✅ Dá para emitir com seu saldo")
-    if ret is None:
-        lines.append("Volta: nenhuma encontrada ainda")
-    else:
-        lines.append(f"Volta: {ret.flight_date:%d/%m/%Y} por {_price(ret)} ({_program(ret.source)})")
-    lines.append(link)
+    if line.dates:
+        lines.append("Datas: " + ", ".join(f"{x:%d/%m/%Y}" for x in line.dates[:MAX_DATES]))
+    if lowest_seen is not None:
+        lines.append(f"Menor já visto: {_int(lowest_seen)} milhas")
+    lines.append(f"{FEED_NAMES.get(d.item.feed, d.item.feed)}: {d.item.title}")
+    lines.append(d.item.url)
     return "\n".join(lines)
 
 
+def format_digest_line(d: PostDecision) -> str:
+    if d.discount is not None and d.price is not None and d.price.miles:
+        return (f"• {_route(d)} · {_int(d.price.miles)} milhas {_program(d)}"
+                f" (-{round(d.discount * 100)}%) — {d.item.url}")
+    return f"• {d.item.title} — {d.reason} — {d.item.url}"
+
+
 def _source_status(s: SourceState) -> str:
-    if s.status == "paused" and s.paused_until is not None:
-        return f"{s.name} pausada até {s.paused_until:%H:%M}"
-    return f"{s.name} ok"
+    return f"{s.name} com problema" if s.status == "paused" or s.failure_streak > 0 else f"{s.name} ok"
 
 
-def format_digest(
-    deals: list[tuple[Deal, Destination]],
-    states: list[SourceState],
-    routes_checked: int,
-    day: date,
-) -> str:
+def format_feed_digest(lines: list[str], states: list[SourceState], day: date) -> str:
     header = f"📋 Resumo fly — {day:%d/%m}"
-    if deals:
-        top = sorted(deals, key=lambda pair: pair[0].discount, reverse=True)[:DIGEST_MAX_ITEMS]
-        body = "\n".join(
-            f"• {d.quote.route.origin} → {d.quote.route.destination} {d.quote.flight_date:%d/%m}"
-            f" · {_price(d.quote)} (-{round(d.discount * 100)}%)"
-            for d, _ in top
-        )
-    else:
-        body = f"Nada entre 30% e 50% abaixo do normal hoje. Rotas verificadas: {routes_checked}."
+    body = "\n".join(lines[:DIGEST_MAX_ITEMS]) if lines else "Nenhuma promoção nova de interesse nas últimas 24h."
     sources = "Fontes: " + ", ".join(_source_status(s) for s in states)
     return f"{header}\n\n{body}\n\n{sources}"
 
