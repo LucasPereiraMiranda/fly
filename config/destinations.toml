@@ -1,0 +1,345 @@
+# Destinations watched from the origin. Priority drives how often each route is scanned.
+# Rio de Janeiro / Sao Paulo airports and US airports are rejected by fly.catalog.
+
+[[destination]]
+iata = "MCZ"
+city = "Maceió"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "REC"
+city = "Recife"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "SSA"
+city = "Salvador"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "FOR"
+city = "Fortaleza"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "NAT"
+city = "Natal"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "JPA"
+city = "João Pessoa"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "AJU"
+city = "Aracaju"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "BPS"
+city = "Porto Seguro"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "IOS"
+city = "Ilhéus"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "SLZ"
+city = "São Luís"
+region = "nordeste"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "FLN"
+city = "Florianópolis"
+region = "sul"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "NVT"
+city = "Navegantes"
+region = "sul"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "POA"
+city = "Porto Alegre"
+region = "sul"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "CWB"
+city = "Curitiba"
+region = "sul"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "IGU"
+city = "Foz do Iguaçu"
+region = "sul"
+priority = "alta"
+country = "BR"
+
+[[destination]]
+iata = "SCL"
+city = "Santiago"
+region = "america_sul"
+priority = "media"
+country = "CL"
+
+[[destination]]
+iata = "EZE"
+city = "Buenos Aires (Ezeiza)"
+region = "america_sul"
+priority = "media"
+country = "AR"
+
+[[destination]]
+iata = "AEP"
+city = "Buenos Aires (Aeroparque)"
+region = "america_sul"
+priority = "media"
+country = "AR"
+
+[[destination]]
+iata = "MVD"
+city = "Montevidéu"
+region = "america_sul"
+priority = "media"
+country = "UY"
+
+[[destination]]
+iata = "LIM"
+city = "Lima"
+region = "america_sul"
+priority = "media"
+country = "PE"
+
+[[destination]]
+iata = "BOG"
+city = "Bogotá"
+region = "america_sul"
+priority = "media"
+country = "CO"
+
+[[destination]]
+iata = "CTG"
+city = "Cartagena"
+region = "america_sul"
+priority = "media"
+country = "CO"
+
+[[destination]]
+iata = "CUZ"
+city = "Cusco"
+region = "america_sul"
+priority = "media"
+country = "PE"
+
+[[destination]]
+iata = "BEL"
+city = "Belém"
+region = "norte"
+priority = "media"
+country = "BR"
+
+[[destination]]
+iata = "MAO"
+city = "Manaus"
+region = "norte"
+priority = "media"
+country = "BR"
+
+[[destination]]
+iata = "BSB"
+city = "Brasília"
+region = "centro_oeste"
+priority = "media"
+country = "BR"
+
+[[destination]]
+iata = "CGB"
+city = "Cuiabá"
+region = "centro_oeste"
+priority = "media"
+country = "BR"
+
+[[destination]]
+iata = "GYN"
+city = "Goiânia"
+region = "centro_oeste"
+priority = "media"
+country = "BR"
+
+[[destination]]
+iata = "NRT"
+city = "Tóquio (Narita)"
+region = "asia"
+priority = "media"
+country = "JP"
+
+[[destination]]
+iata = "HND"
+city = "Tóquio (Haneda)"
+region = "asia"
+priority = "media"
+country = "JP"
+
+[[destination]]
+iata = "ICN"
+city = "Seul"
+region = "asia"
+priority = "media"
+country = "KR"
+
+[[destination]]
+iata = "BKK"
+city = "Bangkok"
+region = "asia"
+priority = "media"
+country = "TH"
+
+[[destination]]
+iata = "SGN"
+city = "Ho Chi Minh"
+region = "asia"
+priority = "media"
+country = "VN"
+
+[[destination]]
+iata = "HAN"
+city = "Hanói"
+region = "asia"
+priority = "media"
+country = "VN"
+
+[[destination]]
+iata = "DPS"
+city = "Bali"
+region = "asia"
+priority = "media"
+country = "ID"
+
+[[destination]]
+iata = "SIN"
+city = "Singapura"
+region = "asia"
+priority = "media"
+country = "SG"
+
+[[destination]]
+iata = "MNL"
+city = "Manila"
+region = "asia"
+priority = "media"
+country = "PH"
+
+[[destination]]
+iata = "KUL"
+city = "Kuala Lumpur"
+region = "asia"
+priority = "media"
+country = "MY"
+
+[[destination]]
+iata = "LIS"
+city = "Lisboa"
+region = "europa"
+priority = "baixa"
+country = "PT"
+
+[[destination]]
+iata = "MAD"
+city = "Madri"
+region = "europa"
+priority = "baixa"
+country = "ES"
+
+[[destination]]
+iata = "CDG"
+city = "Paris"
+region = "europa"
+priority = "baixa"
+country = "FR"
+
+[[destination]]
+iata = "FCO"
+city = "Roma"
+region = "europa"
+priority = "baixa"
+country = "IT"
+
+[[destination]]
+iata = "AMS"
+city = "Amsterdã"
+region = "europa"
+priority = "baixa"
+country = "NL"
+
+[[destination]]
+iata = "IST"
+city = "Istambul"
+region = "europa"
+priority = "baixa"
+country = "TR"
+
+[[destination]]
+iata = "DXB"
+city = "Dubai"
+region = "oriente_medio"
+priority = "baixa"
+country = "AE"
+
+[[destination]]
+iata = "DOH"
+city = "Doha"
+region = "oriente_medio"
+priority = "baixa"
+country = "QA"
+
+[[destination]]
+iata = "SYD"
+city = "Sydney"
+region = "oceania"
+priority = "baixa"
+country = "AU"
+
+[[destination]]
+iata = "PUJ"
+city = "Punta Cana"
+region = "caribe"
+priority = "baixa"
+country = "DO"
+
+[[destination]]
+iata = "CUN"
+city = "Cancún"
+region = "caribe"
+priority = "baixa"
+country = "MX"
