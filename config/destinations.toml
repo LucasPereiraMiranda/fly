@@ -133,6 +133,7 @@ city = "Montevidéu"
 region = "america_sul"
 priority = "media"
 country = "UY"
+aliases = ["Uruguai"]
 
 [[destination]]
 iata = "LIM"
@@ -203,6 +204,7 @@ city = "Tóquio (Narita)"
 region = "asia"
 priority = "media"
 country = "JP"
+aliases = ["Japão"]
 
 [[destination]]
 iata = "HND"
@@ -224,6 +226,7 @@ city = "Bangkok"
 region = "asia"
 priority = "media"
 country = "TH"
+aliases = ["Tailândia"]
 
 [[destination]]
 iata = "SGN"
@@ -245,6 +248,7 @@ city = "Bali"
 region = "asia"
 priority = "media"
 country = "ID"
+aliases = ["Indonésia"]
 
 [[destination]]
 iata = "SIN"
@@ -273,6 +277,7 @@ city = "Lisboa"
 region = "europa"
 priority = "baixa"
 country = "PT"
+aliases = ["Portugal"]
 
 [[destination]]
 iata = "MAD"

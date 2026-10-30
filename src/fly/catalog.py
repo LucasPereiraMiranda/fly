@@ -22,12 +22,16 @@ class Destination:
     region: str
     priority: Priority
     country: str
+    aliases: tuple[str, ...] = ()
 
 
 def load_catalog(path: Path = Path("config/destinations.toml")) -> list[Destination]:
     with path.open("rb") as f:
         raw = tomllib.load(f)
-    catalog = [Destination(**entry) for entry in raw["destination"]]
+    catalog = [
+        Destination(**{**entry, "aliases": tuple(entry.get("aliases", ()))})
+        for entry in raw["destination"]
+    ]
     for d in catalog:
         if d.iata in EXCLUDED_AIRPORTS or d.country in EXCLUDED_COUNTRIES:
             raise ValueError(f"excluded destination in catalog: {d.iata} ({d.country})")
