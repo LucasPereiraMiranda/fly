@@ -14,7 +14,7 @@
     <key>WorkingDirectory</key>
     <string>__REPO__</string>
     <key>StartInterval</key>
-    <integer>10800</integer>
+    <integer>1800</integer>
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>
